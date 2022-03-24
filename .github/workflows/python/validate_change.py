@@ -2,9 +2,7 @@
 import os
 import json 
 import sys
-import subprocess
 import re
-from importlib_metadata import files
 from requests import request
 from os import error
 
