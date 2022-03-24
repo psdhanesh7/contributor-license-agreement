@@ -78,7 +78,11 @@ print("Pull request submitted by github login: " + pr_raiser_login)
 print("Modifications to the file: " + change)
 
 EXPECTED_ERROR_MESSAGE = "Error, invalid row format: The expected line should be: | `full name`| [git-username](https://github.com/git-username) |dd-month-yyyy| \n"
-assert validate_change(pr_raiser_login, change) == EXPECTED_ERROR_MESSAGE
+if validate_change(pr_raiser_login, change) == EXPECTED_SUCCESS_MESSAGE:
+    print(EXPECTED_SUCCESS_MESSAGE)
+else:
+    print("Validation failed!")
+    sys.exit(1)
 
 
 # # user names should be valid

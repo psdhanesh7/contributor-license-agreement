@@ -40,8 +40,7 @@ jobs:
         run: |
           which git
           if ! python ./.github/workflows/python/validate_change.py; then
-              echo "There is something wrong"
-              echo "You can sign the CLA here: http://brackets.io/contributor-license-agreement/"
+              echo "The CLA validation check failed"
               exit 1
           else
               echo "all good"
