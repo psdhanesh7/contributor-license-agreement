@@ -3,10 +3,12 @@ import sys
 import requests
 import json
 import subprocess
+import re
 from diff_parser import get_diff_details
 
 print("current working directory is: ", os.getcwd())
 STATUS_FAILED = 'FAILED'
+EXPECTED_SUCCESS_MESSAGE = "ok"
 
 
 def get_github_details():
@@ -123,7 +125,7 @@ def validate_is_pull_request(pr_details):
 def validate_has_only_a_single_commit(pr_details):
     num_commits = pr_details['num_commits_in_pr']
     if num_commits != 1 :
-        message = '''Error: The pull request should have only a single commit. 
+        message = '''## Error: The pull request should have only a single commit. 
         Please squash all your commits and update this pull request.
         more help: https://stackoverflow.com/questions/5189560/squash-my-last-x-commits-together-using-git
         '''
@@ -134,7 +136,9 @@ def validate_has_only_a_single_commit(pr_details):
 def validate_has_only_a_single_file_change(pr_details):
     files_updated = pr_details['files_updated']
     if len(files_updated) != 1 :
-        message = 'Error: The pull request should have exactly one file change signing the CLA. But found the following files changed:\n ' + str(files_updated)
+        message = '## Error: The pull request should have exactly one file change signing the CLA. \nBut found the following files changed: '
+        for file in files_updated:
+            message += '\n   * ' + file
         return task_failed(message)
     print('Pass: Pull request has only a single file change.')
 
@@ -150,6 +154,29 @@ def getChanges(patch_details):
         'textAdded': line_added
     }
 
+
+def validate_row_formatting(line):
+    # Regular expression for validating the line format
+    format_re = "\+\|\s*`[A-Za-z]+(\s[A-Za-z]+)*`\s*\|\s*\[[a-zA-Z\d](?:[A-Za-z\d]|-(?=[a-zA-Z\d])){0,38}\]\(https:\/\/github\.com\/[a-zA-Z\d](?:[A-Za-z\d]|-(?=[a-zA-Z\d])){0,38}\)\s*\|\s*[\d]{2}-[a-zA-Z]+-[\d]{4}\s*\|"
+    # Regular expression for checking extra spaces at the begining of the line
+    extra_spaces_re = "\+\s+\|\s*`[A-Za-z]+(\s[A-Za-z]+)*`\s*\|\s*\[[a-zA-Z\d](?:[A-Za-z\d]|-(?=[a-zA-Z\d])){0,38}\]\(https:\/\/github\.com\/[a-zA-Z\d](?:[A-Za-z\d]|-(?=[a-zA-Z\d])){0,38}\)\s*\|\s*[\d]{2}-[a-zA-Z]+-[\d]{4}\s*\|"
+    if re.match(format_re, line):
+        print('Pass: Added line is of the specified format')
+    elif re.match(extra_spaces_re, line):
+        return task_failed('Error: The expected line should be: | `full name` | [git-username](https://github.com/git-username) | dd-month-yyyy | \n' + 'Please remove extra spaces in the start of the line.')
+    else:
+        return task_failed('Error: The expected line should be: | `full name` | [git-username](https://github.com/git-username) | dd-month-yyyy | \n')
+    
+
+# Change line is of the format "+| `full name`| [pr_raiser_login](https://github.com/pr_raiser_login) |12-july-2021|"
+def validate_change(pr_raiser_login, change):
+    ROW_FORMATTING_VALIDATION = validate_row_formatting(change)
+
+    if ROW_FORMATTING_VALIDATION == STATUS_FAILED:
+        print('Line format validations failed. Exiting!')
+        return STATUS_FAILED
+
+
 def validate_patch(pr_details):
     github = pr_details['github']
     diffURL = github['event']['pull_request']['diff_url']
@@ -160,10 +187,14 @@ def validate_patch(pr_details):
         sys.exit(1)
     changes = getChanges(response.text)
     if changes['linesRemoved'] !=0:
-        return task_failed('Error: Some lines were removed. Please re-submit PR containing exactly one change adding your name to the CLA.')
+        return task_failed('## Error: Some lines were removed. \n    Please re-submit PR containing exactly one change adding your name to the CLA.\n')
     if changes['linesAdded'] !=1:
-        return task_failed('Error: More than 1 line was added. Please re-submit PR containing exactly one change adding your name to the CLA.')
+        return task_failed('## Error: More than 1 line was added. \n   Please re-submit PR containing exactly one change adding your name to the CLA.\n')
     print(changes['textAdded'])
+    
+    CHANGE_VALIDATION = validate_change(pr_details['pr_submitter_github_login'], changes['textAdded'])
+    return CHANGE_VALIDATION
+
 
 def review_pr():
     print('Reviewing PR')
@@ -176,7 +207,14 @@ def review_pr():
         print('Validations failed. Exiting!')
         return
     
-    write_comment('Thank you for signing the contributor license agreement with core.ai. Welcome to our community :)')
+
+    
+    write_comment( '\n## Welcome \nHello ' + pr_details['pr_submitter_github_login'] + ', \n'\
+                  + 'Thank you for being a part of our community and helping build free software for the future. '\
+                  + 'On behalf of everyone at core.ai open research, we extend a warm welcome to our community. \n'\
+                  + 'If you have not done so already, please [join our discord group](https://discord.gg/GaBDAK7BRM) to interact with our community members. \n'
+    )
 
 
 review_pr()
+
