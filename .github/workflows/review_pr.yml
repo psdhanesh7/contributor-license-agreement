@@ -12,7 +12,8 @@ on:
   pull_request:
     branches:
       - main
-      - test-validate-changes
+      - test-validate-change
+
 
 jobs:
   one:
