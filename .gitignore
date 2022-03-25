@@ -11,6 +11,8 @@
 *.cb
 *.cb2
 .*.lb
+.tmp
+*__pycache__*
 
 ## Intermediate documents:
 *.dvi
@@ -274,3 +276,6 @@ TSWLatexianTemp*
 
 # Makeindex log files
 *.lpz
+
+# temparory files for testing locally
+.tmp
