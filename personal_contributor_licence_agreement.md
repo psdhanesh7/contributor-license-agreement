@@ -73,3 +73,4 @@ I agree with all the terms and conditions above by providing my details in **tab
 | `Dhanesh P S`| [psdhanesh7](https://github.com/psdhanesh7) |10-September-2021|
 | `Sankar Majji`| [sankar236](https://github.com/sankar236) |24-October-2021|
 | `Dhanesh P S`| [psdhanesh7](https://github.com/psdhanesh7) |28-March-2022|
+| `Sankar Majji`| [sankar236](https://github.com/sankar236) |24-October-2021|
