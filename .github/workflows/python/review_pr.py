@@ -300,7 +300,7 @@ def review_pr():
     PATCH_VALIDATION = validate_patch(pr_details)
     if COMMIT_VALIDATION == STATUS_FAILED or FILE_VALIDATION == STATUS_FAILED or PATCH_VALIDATION == STATUS_FAILED:
         print('Validations failed. Exiting!')
-        return
+        sys.exit(1)
     
     write_comment( '\n## Welcome \nHello ' + pr_details['pr_submitter_github_login'] + ', \n'\
                   + 'Thank you for being a part of our community and helping build free software for the future. '\
