@@ -213,6 +213,10 @@ def validate_row_formatting(files_updated, line):
     extra_spaces_re = ""
     single_qoutes_re = ""
 
+    print('Files updated:')
+    print(files_updated)
+    print(files_update[0] == employer_cla_file)
+
     if files_updated[0] == employer_cla_file:
         FORMATTING_ERROR = "Line Format Error: The expected line should be: | `full name` | [git-username](https://github.com/git-username) | employer name | country | dd-month-yyyy | \n"
         # Regular expression for validating the line format
